@@ -1,9 +1,11 @@
 {
-  "name": "zef",
+  "name": "zeft",
   "version": "0.1.0",
   "description": "A lightweight state management library powered by Effect",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "module": "dist/index.js",
+  "sideEffects": false,
   "files": [
     "dist/",
     "LICENSE",
@@ -14,16 +16,26 @@
     "test": "jest --config jest.config.js",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint"
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PxlSyl/zeft.git"
+  },
+  "homepage": "https://github.com/PxlSyl/zeft#readme",
+  "bugs": {
+    "url": "https://github.com/PxlSyl/zeft/issues"
   },
   "keywords": [
     "state-management",
     "effect",
     "typescript",
-    "react"
+    "react",
+    "zustand",
+    "state",
+    "store"
   ],
-  "author": "",
+  "author": "PxlSyl",
   "license": "MIT",
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",

@@ -16,4 +16,4 @@ export {
 } from './effect';
 
 // Les hooks React sont exportés depuis un sous-chemin pour permettre tree-shaking
-// Les utilisateurs peuvent les importer avec: import { useStore } from 'zef/react' 
+// Les utilisateurs peuvent les importer avec: import { useStore } from 'zeft/react' 

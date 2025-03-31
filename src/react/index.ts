@@ -5,4 +5,4 @@ export {
   useEffectStore,
   useMemoizedSelector,
   useMemoizedAction
-} from '../react'; 
+} from './react'; 

@@ -1,4 +1,4 @@
-# ZEF
+# ZEFT
 
 A lightweight state management library inspired by Zustand but powered by Effect. It provides a simple and efficient way to manage state in your applications, with built-in support for handling asynchronous operations and first-class React integration.
 
@@ -17,11 +17,11 @@ A lightweight state management library inspired by Zustand but powered by Effect
 ## Installation
 
 ```bash
-npm install zef
+npm install zeft
 # or
-yarn add zef
+yarn add zeft
 # or
-pnpm add zef
+pnpm add zeft
 ```
 
 ## API Documentation
@@ -32,7 +32,7 @@ pnpm add zef
 The basic store provides state management with subscription capabilities and selective updates.
 
 ```typescript
-import { createStore } from 'zef'
+import { createStore } from 'zeft'
 
 interface TodoState {
   todos: string[]
@@ -75,8 +75,8 @@ const unsubscribe = todoStore.subscribe((state) => {
 The effect store extends the basic store with the ability to run Effect operations.
 
 ```typescript
-import { createEffectStore } from 'zef'
-import { createEffect } from 'zef/effect'
+import { createEffectStore } from 'zeft'
+import { createEffect } from 'zeft/effect'
 
 // Create a store with effects support
 const todoStore = createEffectStore<TodoState>((set, get) => ({
@@ -110,7 +110,7 @@ todoStore.run(fetchTodos, {
 Creates an Effect from an async function:
 
 ```typescript
-import { createEffect } from 'zef/effect'
+import { createEffect } from 'zeft/effect'
 
 const fetchTodos = createEffect<Error, string[]>(async () => {
   const response = await fetch('https://api.example.com/todos')
@@ -122,7 +122,7 @@ const fetchTodos = createEffect<Error, string[]>(async () => {
 Creates an Effect that automatically updates the store state:
 
 ```typescript
-import { createEffectWithState } from 'zef/effect'
+import { createEffectWithState } from 'zeft/effect'
 
 const fetchTodosEffect = createEffectWithState(
   fetchTodos,
@@ -137,7 +137,7 @@ const fetchTodosEffect = createEffectWithState(
 Creates an Effect with success and error callbacks:
 
 ```typescript
-import { createEffectWithCallback } from 'zef/effect'
+import { createEffectWithCallback } from 'zeft/effect'
 
 const fetchTodosWithCallbacks = createEffectWithCallback(fetchTodos, {
   onSuccess: (todos) => {
@@ -153,7 +153,7 @@ const fetchTodosWithCallbacks = createEffectWithCallback(fetchTodos, {
 
 #### Basic Usage
 ```typescript
-import { useStore, useStoreSelector, useEffectStore } from 'zef/react'
+import { useStore, useStoreSelector, useEffectStore } from 'zeft/react'
 
 function TodoList() {
   // Get the entire state
@@ -173,7 +173,7 @@ function TodoList() {
 
 #### Using Effects in React
 ```typescript
-import { useEffectStore, useMemoizedAction } from 'zef/react'
+import { useEffectStore, useMemoizedAction } from 'zeft/react'
 
 function TodoList() {
   const [state, runEffect] = useEffectStore(todoStore)
@@ -199,7 +199,7 @@ function TodoList() {
 
 #### Optimized Selectors
 ```typescript
-import { useStoreSelector, useMemoizedSelector } from 'zef/react'
+import { useStoreSelector, useMemoizedSelector } from 'zeft/react'
 
 function TodoList() {
   // Create a memoized selector
@@ -223,7 +223,7 @@ function TodoList() {
 
 #### Memoized Actions
 ```typescript
-import { useMemoizedAction } from 'zef/react'
+import { useMemoizedAction } from 'zeft/react'
 
 function TodoActions() {
   const toggleTodo = useMemoizedAction(
@@ -244,7 +244,7 @@ function TodoActions() {
 ## Basic Usage Example
 
 ```typescript
-import { createStore } from 'zef'
+import { createStore } from 'zeft'
 
 interface Todo {
   id: string

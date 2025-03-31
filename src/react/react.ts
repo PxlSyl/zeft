@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react"
-import { Store, EffectStore } from "./store"
+import { Store, EffectStore } from "../store"
 import * as Effect from 'effect/Effect'
 
 /**
