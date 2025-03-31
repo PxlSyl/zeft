@@ -4,11 +4,11 @@ import { useStore, useStoreSelector, useEffectStore, useMemoizedSelector, useMem
 import { createStore, createEffectStore } from '../store';
 import * as Effect from 'effect/Effect';
 
-// Ces tests supposent que jest et @testing-library/react-hooks sont configurés
-// correctement pour les tests React
+// These tests assume that jest and @testing-library/react-hooks are configured
+// correctly for React tests
 
 describe('React hooks', () => {
-  // Test du hook useStore
+  // Test for useStore hook
   describe('useStore', () => {
     it('should return the current state of the store', () => {
       // Arrange
@@ -42,7 +42,7 @@ describe('React hooks', () => {
     });
   });
   
-  // Test du hook useStoreSelector
+  // Test for useStoreSelector hook
   describe('useStoreSelector', () => {
     it('should select a part of the store state', () => {
       // Arrange
@@ -74,7 +74,7 @@ describe('React hooks', () => {
         return useStoreSelector(store, state => state.count);
       });
       
-      // Initial render count (React 18 peut appeler le rendu plusieurs fois en mode strict)
+      // Initial render count (React 18 may call render multiple times in strict mode)
       const initialRenderCount = renderCounter.mock.calls.length;
       
       // Reset the counter for cleaner assertions
@@ -104,7 +104,7 @@ describe('React hooks', () => {
     });
   });
   
-  // Test du hook useEffectStore
+  // Test for useEffectStore hook
   describe('useEffectStore', () => {
     it('should return the current state and a run function', () => {
       // Arrange
@@ -151,7 +151,7 @@ describe('React hooks', () => {
     });
   });
   
-  // Test des hooks de mémoization
+  // Test for memoization hooks
   describe('useMemoizedSelector', () => {
     it('should create a memoized selector function', () => {
       // Arrange

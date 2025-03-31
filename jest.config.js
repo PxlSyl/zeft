@@ -1,7 +1,7 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
     preset: 'ts-jest',
-    testEnvironment: 'jsdom', // Changé de 'node' à 'jsdom' pour les tests React
+    testEnvironment: 'jsdom', // Changed from 'node' to 'jsdom' for React tests
     testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
     roots: ['<rootDir>/src/'],
     collectCoverage: true,

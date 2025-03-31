@@ -1,6 +1,6 @@
 {
   "name": "zeft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A lightweight state management library powered by Effect",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "test": "jest --config jest.config.js",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "npm run build"
+    "prepare": "yarn build"
   },
   "repository": {
     "type": "git",

@@ -1,16 +1,16 @@
-// Ce fichier permet d'ajouter des configurations supplémentaires pour Jest
+// This file allows adding additional configurations for Jest
 
-// Activer les matchers jest-dom pour faciliter les tests React
+// Enable jest-dom matchers to make React testing easier
 require('@testing-library/jest-dom');
 
-// Supprimer les logs pendant les tests
+// Suppress logs during tests
 global.console = {
     ...global.console,
-    // Ne pas afficher les messages non critiques pendant les tests
+    // Don't display non-critical messages during tests
     log: jest.fn(),
     debug: jest.fn(),
     info: jest.fn(),
-    // Garder les warnings et erreurs visibles
+    // Keep warnings and errors visible
     warn: global.console.warn,
     error: global.console.error,
 }; 

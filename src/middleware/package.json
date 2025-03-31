@@ -1,0 +1,7 @@
+{
+    "name": "zeft-middleware",
+    "private": true,
+    "sideEffects": false,
+    "main": "../dist/middleware/index.js",
+    "types": "../dist/middleware/index.d.ts"
+}

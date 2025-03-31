@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from "react"
-import { Store, EffectStore } from "../store"
-import * as Effect from 'effect/Effect'
+import { useEffect, useRef, useState, useCallback } from "react";
+import { Store, EffectStore } from "../store";
+import * as Effect from "effect/Effect";
 
 /**
  * Hook to subscribe to a store and get its current state
@@ -9,22 +9,22 @@ import * as Effect from 'effect/Effect'
  * @returns The current state of the store
  */
 export function useStore<T>(store: Store<T>): T {
-  const [state, setState] = useState<T>(store.getState())
-  const storeRef = useRef(store)
+  const [state, setState] = useState<T>(store.getState());
+  const storeRef = useRef(store);
 
   useEffect(() => {
-    storeRef.current = store
-  }, [store])
+    storeRef.current = store;
+  }, [store]);
 
   useEffect(() => {
     const subscription = storeRef.current.subscribe((newState) => {
-      setState(newState)
-    })
+      setState(newState);
+    });
 
-    return () => subscription()
-  }, [])
+    return () => subscription();
+  }, []);
 
-  return state
+  return state;
 }
 
 /**
@@ -39,34 +39,34 @@ export function useStore<T>(store: Store<T>): T {
 export function useStoreSelector<T, U>(
   store: Store<T>,
   selector: (state: T) => U,
-  equalityFn: (a: U, b: U) => boolean = (a, b) => a === b
+  equalityFn: (a: U, b: U) => boolean = (a, b) => a === b,
 ): U {
-  const [selected, setSelected] = useState<U>(() => selector(store.getState()))
-  const selectorRef = useRef(selector)
-  const equalityFnRef = useRef(equalityFn)
-  const storeRef = useRef(store)
+  const [selected, setSelected] = useState<U>(() => selector(store.getState()));
+  const selectorRef = useRef(selector);
+  const equalityFnRef = useRef(equalityFn);
+  const storeRef = useRef(store);
 
   useEffect(() => {
-    selectorRef.current = selector
-    equalityFnRef.current = equalityFn
-  }, [selector, equalityFn])
+    selectorRef.current = selector;
+    equalityFnRef.current = equalityFn;
+  }, [selector, equalityFn]);
 
   useEffect(() => {
-    storeRef.current = store
-  }, [store])
+    storeRef.current = store;
+  }, [store]);
 
   useEffect(() => {
     const subscription = storeRef.current.subscribe((state) => {
-      const newSelected = selectorRef.current(state)
+      const newSelected = selectorRef.current(state);
       if (!equalityFnRef.current(selected, newSelected)) {
-        setSelected(newSelected)
+        setSelected(newSelected);
       }
-    })
+    });
 
-    return () => subscription()
-  }, [])
+    return () => subscription();
+  }, []);
 
-  return selected
+  return selected;
 }
 
 /**
@@ -76,22 +76,25 @@ export function useStoreSelector<T, U>(
  * @returns Tuple containing the current state and a function to run effects
  */
 export function useEffectStore<T>(store: EffectStore<T>) {
-  const state = useStore(store)
-  const storeRef = useRef(store)
+  const state = useStore(store);
+  const storeRef = useRef(store);
 
   useEffect(() => {
-    storeRef.current = store
-  }, [store])
+    storeRef.current = store;
+  }, [store]);
 
-  const runEffect = useCallback(<A, E>(
-    effect: Effect.Effect<A, E, never>,
-    options?: {
-      onSuccess?: (result: A) => void
-      onError?: (error: E) => void
-    }
-  ) => storeRef.current.run(effect, options), [])
+  const runEffect = useCallback(
+    <A, E>(
+      effect: Effect.Effect<A, E, never>,
+      options?: {
+        onSuccess?: (result: A) => void;
+        onError?: (error: E) => void;
+      },
+    ) => storeRef.current.run(effect, options),
+    [],
+  );
 
-  return [state, runEffect] as const
+  return [state, runEffect] as const;
 }
 
 /**
@@ -104,15 +107,15 @@ export function useEffectStore<T>(store: EffectStore<T>) {
  */
 export function useMemoizedSelector<T, U>(
   selector: (state: T) => U,
-  deps: any[] = []
+  deps: any[] = [],
 ): (state: T) => U {
-  const selectorRef = useRef(selector)
+  const selectorRef = useRef(selector);
 
   useEffect(() => {
-    selectorRef.current = selector
-  }, [selector, ...deps])
+    selectorRef.current = selector;
+  }, [selector, ...deps]);
 
-  return useCallback((state: T) => selectorRef.current(state), [])
+  return useCallback((state: T) => selectorRef.current(state), []);
 }
 
 /**
@@ -125,13 +128,16 @@ export function useMemoizedSelector<T, U>(
  */
 export function useMemoizedAction<T, A extends (...args: any[]) => any>(
   action: A,
-  deps: any[] = []
+  deps: any[] = [],
 ): A {
-  const actionRef = useRef(action)
+  const actionRef = useRef(action);
 
   useEffect(() => {
-    actionRef.current = action
-  }, [action, ...deps])
+    actionRef.current = action;
+  }, [action, ...deps]);
 
-  return useCallback((...args: Parameters<A>) => actionRef.current(...args), []) as A
-} 
+  return useCallback(
+    (...args: Parameters<A>) => actionRef.current(...args),
+    [],
+  ) as A;
+}

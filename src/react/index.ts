@@ -4,5 +4,5 @@ export {
   useStoreSelector,
   useEffectStore,
   useMemoizedSelector,
-  useMemoizedAction
-} from './react'; 
+  useMemoizedAction,
+} from "./react";

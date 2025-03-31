@@ -1,19 +1,22 @@
-// Export des fonctionnalités de base du store
-export { 
-  createStore, 
+// Export of core store features
+export {
+  createStore,
   createEffectStore,
   type Store,
   type EffectStore,
   type SetState,
-  type GetState
-} from './store';
+  type GetState,
+} from "./store";
 
-// Export des utilitaires d'effets
-export { 
+// Export of effect utilities
+export {
   createEffect,
   createEffectWithState,
-  createEffectWithCallback
-} from './effect';
+  createEffectWithCallback,
+} from "./effect";
 
-// Les hooks React sont exportés depuis un sous-chemin pour permettre tree-shaking
-// Les utilisateurs peuvent les importer avec: import { useStore } from 'zeft/react' 
+// React hooks are exported from a sub-path to enable tree-shaking
+// Users can import them with: import { useStore } from 'zeft/react'
+
+// Middlewares are exported from a sub-path
+// Users can import them with: import { persist } from 'zeft/middleware'
