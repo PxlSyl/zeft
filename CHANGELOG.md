@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2025-04-02
+
+### Added
+- New advanced React hooks with Effect:
+  - `useCancellable`: Managing cancellable operations with timeout support
+  - `useRetry`: Automatic retry after failure with customizable strategies
+  - `useSWR`: Implementation of Stale-While-Revalidate pattern for data fetching
+  - `useReducerWithEffect`: Extended useReducer hook with Effect capabilities
+  - `usePrioritizedEffects`: Orchestration of effects with priority management
+
+### Improved
+- Better integration with Effect's Fiber API for cancellation management
+- More idiomatic use of Effect's functional patterns
+- Enhanced error handling across all hooks
+
 ## [0.5.1] - 2025-04-01
 
 ### Improved

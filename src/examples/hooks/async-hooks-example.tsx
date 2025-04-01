@@ -6,7 +6,7 @@ import {
   useCombinedEffects,
   useConditionalEffect,
   useStoreEffect 
-} from '../../react/hooks';
+} from '../../react/hooks/async-hooks';
 
 // Define a Todo type
 interface Todo {

@@ -657,6 +657,59 @@ function TodoList() {
 }
 ```
 
+
+#### Even more advanced React Hooks with Effect
+
+In addition to all of this, this project offers a collection of very advanced hooks that leverage the [Effect](https://effect.website/) library to handle complex scenarios such as concurrency, cancellations, timeouts, and retries.
+
+### Available
+
+1. **useCancellable** - Managing cancellable operations with timeout
+   ```tsx
+   const { data, error, isLoading, run, cancel } = useCancellable(
+     fetchUserEffect(userId),
+     { timeout: 5000, immediate: true }
+   );
+   ```
+
+2. **useRetry** - Automatic retry after failure with exponential backoff
+   ```tsx
+   const { data, error, retryCount, retry } = useRetry(
+     fetchCommentsEffect(postId),
+     { maxRetries: 3, retryStrategy: 'exponential' }
+   );
+   ```
+
+3. **useSWR** - Stale-While-Revalidate pattern for cache management
+   ```tsx
+   const { data, error, revalidate } = useSWR(
+     fetchPostsEffect(userId),
+     { key: `posts-${userId}`, revalidateOnFocus: true }
+   );
+   ```
+
+4. **useReducerWithEffect** - Extension of useReducer with Effect capabilities
+   ```tsx
+   const { state, dispatch, isEffectRunning } = useReducerWithEffect(
+     userReducer,
+     { initialState, effectFactory: () => fetchUserEffect(userId) }
+   );
+   ```
+
+5. **usePrioritizedEffects** - Orchestration of effects with priorities and dependencies
+   ```tsx
+   const { 
+     resources, isProcessing, addEffect,
+     removeEffect, getResourceState
+   } = usePrioritizedEffects({ concurrency: 2 });
+   ```
+
+For detailed documentation of each hook, see [the advanced hooks reference guide](src/react/hooks/advanced-hooks/README.md).
+
+### Integration Examples
+
+Check the file `src/examples/hooks/advanced-hooks-demo.tsx` for complete examples of each hook in action.
+
 ### Basic Usage Example
 
 ```typescript
