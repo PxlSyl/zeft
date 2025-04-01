@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] - 2025-04-01
+
+### Improved
+- Optimized package size by excluding examples from the published package
+- Reduced unpacked size from ~183KB to significantly less
+
 ## [0.5.0] - 2025-04-01
 
 ### Improved
