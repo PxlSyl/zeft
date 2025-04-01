@@ -6,3 +6,5 @@ export {
   type PersistOptions,
   type PersistApi,
 } from "./persist";
+
+export { devtools, type DevtoolsOptions } from "./devtools";

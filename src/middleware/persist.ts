@@ -141,19 +141,19 @@ export interface JSONStorageOptions {
  */
 export const createJSONStorage = (
   getStorage: () => Storage | StateStorage,
-  options?: JSONStorageOptions
+  options?: JSONStorageOptions,
 ): StateStorage => ({
   getItem: (name) => {
     const storage = getStorage();
     const value = storage.getItem(name);
     if (value === null) return null;
-    
+
     return Effect.tryPromise({
       try: () => Promise.resolve(JSON.parse(value as string, options?.reviver)),
       catch: (e) => {
         console.warn("Error parsing stored JSON, returning raw value:", e);
         return value;
-      }
+      },
     }).pipe(Effect.runSync);
   },
   setItem: (name, value) => {
@@ -163,9 +163,9 @@ export const createJSONStorage = (
       catch: (e) => {
         console.error("Error stringifying value for storage:", e);
         throw e; // Re-throw to let the caller know the operation failed
-      }
+      },
     }).pipe(Effect.runSync);
-    
+
     return Effect.tryPromise({
       try: () => {
         const result = storage.setItem(name, stringifiedValue);
@@ -174,7 +174,7 @@ export const createJSONStorage = (
       catch: (e) => {
         console.error("Error storing value in storage:", e);
         throw e; // Re-throw to let the caller know the operation failed
-      }
+      },
     }).pipe(Effect.runSync);
   },
   removeItem: (name) => {
@@ -187,7 +187,7 @@ export const createJSONStorage = (
       catch: (e) => {
         console.error("Error removing item from storage:", e);
         throw e;
-      }
+      },
     }).pipe(Effect.runSync);
   },
 });
@@ -345,7 +345,7 @@ export interface VersionedState {
  */
 export const persist = <T extends object>(
   stateCreator: StateCreator<T>,
-  options: PersistOptions<T>
+  options: PersistOptions<T>,
 ): StateCreator<T> => {
   const {
     name,
@@ -356,8 +356,8 @@ export const persist = <T extends object>(
     migrate,
     merge = (persistedState, currentState) => ({
       ...currentState,
-      ...(persistedState as Partial<T>)
-    })
+      ...(persistedState as Partial<T>),
+    }),
   } = options;
 
   let hydrationStatus: HydrationStatus = "NOT_HYDRATED";
@@ -378,31 +378,35 @@ export const persist = <T extends object>(
           catch: (error) => {
             console.error("Error retrieving persisted state:", error);
             return null;
-          }
+          },
         });
-        
+
         const storedValue = await Effect.runPromise(storedValueEffect);
-        
+
         if (storedValue) {
           const hydrateStateEffect = Effect.tryPromise({
             try: async () => {
-              let deserializedState: unknown = typeof storedValue === "string" 
-                ? JSON.parse(storedValue) 
-                : storedValue;
-              
+              let deserializedState: unknown =
+                typeof storedValue === "string"
+                  ? JSON.parse(storedValue)
+                  : storedValue;
+
               // Migrate state if necessary
-              const versionedState = deserializedState as Partial<VersionedState>;
-              if (migrate && 
-                  typeof deserializedState === "object" && 
-                  deserializedState !== null && 
-                  "version" in versionedState && 
-                  versionedState.version !== version) {
+              const versionedState =
+                deserializedState as Partial<VersionedState>;
+              if (
+                migrate &&
+                typeof deserializedState === "object" &&
+                deserializedState !== null &&
+                "version" in versionedState &&
+                versionedState.version !== version
+              ) {
                 deserializedState = await migrate(
                   deserializedState,
-                  versionedState.version ?? 0
+                  versionedState.version ?? 0,
                 );
               }
-              
+
               // Merge persisted state with current state
               const currentState = get();
               return merge(deserializedState, currentState);
@@ -410,16 +414,16 @@ export const persist = <T extends object>(
             catch: (error) => {
               console.error("Error during state hydration:", error);
               return undefined;
-            }
+            },
           });
-          
+
           const mergedState = await Effect.runPromise(hydrateStateEffect);
-          
+
           if (mergedState !== undefined) {
             // Update the state
             set(mergedState, true);
           }
-          
+
           // Call the onRehydrateStorage callback
           onRehydrateStorage?.(mergedState);
         } else {
@@ -438,9 +442,9 @@ export const persist = <T extends object>(
     const persistState = (state: T) => {
       const persistedState: VersionedState = {
         ...partialize(state),
-        version
+        version,
       };
-      
+
       // Only persist if the state has been hydrated
       if (hydrationStatus === "HYDRATED") {
         Effect.tryPromise({
@@ -451,7 +455,7 @@ export const persist = <T extends object>(
           catch: (error) => {
             console.error("Error persisting state:", error);
             return false;
-          }
+          },
         }).pipe(Effect.runSync);
       }
     };
@@ -486,13 +490,16 @@ export const persist = <T extends object>(
               fn(subscribed);
               return () => {};
             }
-            
+
             // We need this type assertion because we're using the function
             // in a way that's compatible with the subscribe method,
             // but TypeScript doesn't know that
-            type SubscribeFunction = (listener: (state: T) => void) => () => void;
-            const subscribe = ((fn as unknown) as Store<T>['subscribe']) as SubscribeFunction;
-            
+            type SubscribeFunction = (
+              listener: (state: T) => void,
+            ) => () => void;
+            const subscribe =
+              fn as unknown as Store<T>["subscribe"] as SubscribeFunction;
+
             const unsubscribe = subscribe((state: T) => {
               if (hydrationStatus === "HYDRATED") {
                 fn(state);
@@ -516,8 +523,8 @@ export const persist = <T extends object>(
           },
           clearStorage: () => {
             storage.removeItem(name);
-          }
-        }
+          },
+        },
       };
 
       Object.assign(state, persistApi);

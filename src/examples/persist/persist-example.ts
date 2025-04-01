@@ -1,5 +1,5 @@
-import { createStore, createEffectStore } from '../../store';
-import { persist, createJSONStorage } from '../../middleware/persist';
+import { createStore, createEffectStore } from "../../store";
+import { persist, createJSONStorage } from "../../middleware/persist";
 
 // Example with a simple store
 interface CounterState {
@@ -12,14 +12,14 @@ export const useCounterStore = createStore<CounterState>(
   persist(
     (set, get) => ({
       count: 0,
-      increment: () => set(state => ({ count: state.count + 1 })),
-      decrement: () => set(state => ({ count: state.count - 1 }))
+      increment: () => set((state) => ({ count: state.count + 1 })),
+      decrement: () => set((state) => ({ count: state.count - 1 })),
     }),
     {
-      name: 'counter-storage', // unique name in storage
-      storage: createJSONStorage(() => localStorage) // using localStorage
-    }
-  )
+      name: "counter-storage", // unique name in storage
+      storage: createJSONStorage(() => localStorage), // using localStorage
+    },
+  ),
 );
 
 // Example with an effect store
@@ -37,17 +37,19 @@ export const useTodoStore = createEffectStore<TodoState>(
       todos: [],
       loading: false,
       error: null,
-      addTodo: (todo: string) => set(state => ({ 
-        todos: [...state.todos, todo] 
-      })),
-      removeTodo: (index: number) => set(state => ({
-        todos: state.todos.filter((_, i) => i !== index)
-      }))
+      addTodo: (todo: string) =>
+        set((state) => ({
+          todos: [...state.todos, todo],
+        })),
+      removeTodo: (index: number) =>
+        set((state) => ({
+          todos: state.todos.filter((_, i) => i !== index),
+        })),
     }),
     {
-      name: 'todo-storage',
+      name: "todo-storage",
       // Only store the todos and not the loading state
-      partialize: (state) => ({ todos: state.todos })
-    }
-  )
-); 
+      partialize: (state) => ({ todos: state.todos }),
+    },
+  ),
+);

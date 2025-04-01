@@ -2,10 +2,13 @@
 export {
   createStore,
   createEffectStore,
+  createSlice,
+  combineSlices,
   type Store,
   type EffectStore,
   type SetState,
   type GetState,
+  type StateSlice,
 } from "./store";
 
 // Export of effect utilities

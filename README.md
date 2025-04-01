@@ -13,6 +13,7 @@ A lightweight state management library inspired by Zustand but powered by Effect
 - 🔄 Built-in support for async operations
 - 🎨 Customizable equality functions for selectors
 - 🔄 Selective state updates with automatic diffing
+- 🔪 Modular state with slices for better code organization
 - 💾 Persist middleware for storing state in various storage systems
 
 ## Installation
@@ -242,7 +243,421 @@ function TodoActions() {
 }
 ```
 
-## Basic Usage Example
+#### Advanced Asynchronous Hooks
+
+Zeft provides a set of hooks for more declarative handling of asynchronous operations. Below, each hook is shown with both a traditional React implementation and the improved zeft version for comparison:
+
+##### useAsyncEffect
+
+For handling a single asynchronous Effect with built-in loading and error states:
+
+**Traditional React approach:**
+```tsx
+import { useState, useEffect, useCallback } from 'react';
+
+function TodoList() {
+  const [todos, setTodos] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isExecuted, setIsExecuted] = useState(false);
+  
+  const fetchTodos = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/todos');
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      const data = await response.json();
+      setTodos(data);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+    } finally {
+      setIsLoading(false);
+      setIsExecuted(true);
+    }
+  }, []);
+  
+  // Run immediately when component mounts
+  useEffect(() => {
+    fetchTodos();
+  }, [fetchTodos]);
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return (
+    <div>
+      <button onClick={fetchTodos}>Refresh</button>
+      <ul>
+        {todos?.map(todo => <li key={todo.id}>{todo.title}</li>)}
+      </ul>
+    </div>
+  );
+}
+```
+
+**With zeft:**
+```tsx
+import { useAsyncEffect } from 'zeft/react'
+import * as Effect from 'effect/Effect'
+
+// Create an effect
+const fetchTodosEffect = Effect.tryPromise({
+  try: () => fetch('/api/todos').then(r => r.json()),
+  catch: (error) => new Error(`Failed to fetch todos: ${error}`)
+});
+
+function TodoList() {
+  // Load data with full state management
+  const { 
+    data: todos,  // The result 
+    error,        // Error if any
+    isLoading,    // Loading state
+    isExecuted,   // Whether effect was executed
+    run           // Function to manually run the effect
+  } = useAsyncEffect(
+    fetchTodosEffect, 
+    {
+      immediate: true,               // Run immediately when component mounts
+      deps: [userId],                // Dependencies array (like useEffect)
+      onSuccess: (data) => {},       // Success callback
+      onError: (error) => {}         // Error callback
+    }
+  );
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return (
+    <div>
+      <button onClick={run}>Refresh</button>
+      <ul>
+        {todos?.map(todo => <li key={todo.id}>{todo.title}</li>)}
+      </ul>
+    </div>
+  );
+}
+```
+
+##### useCombinedEffects
+
+For running multiple effects together (in parallel or sequence):
+
+**Traditional React approach:**
+```tsx
+import { useState, useEffect, useCallback } from 'react';
+
+function Dashboard() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isExecuted, setIsExecuted] = useState(false);
+  
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Parallel execution of async operations
+      const [users, todos, projects] = await Promise.all([
+        fetch('/api/users').then(r => r.json()),
+        fetch('/api/todos').then(r => r.json()),
+        fetch('/api/projects').then(r => r.json())
+      ]);
+      
+      // For sequential execution, you'd need multiple awaits
+      // const users = await fetch('/api/users').then(r => r.json());
+      // const todos = await fetch('/api/todos').then(r => r.json());
+      // const projects = await fetch('/api/projects').then(r => r.json());
+      
+      setData([users, todos, projects]);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+    } finally {
+      setIsLoading(false);
+      setIsExecuted(true);
+    }
+  }, []);
+  
+  // Run on component mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
+  if (isLoading) return <div>Loading dashboard data...</div>;
+  
+  if (data) {
+    const [users, todos, projects] = data;
+    return (
+      <Dashboard 
+        users={users} 
+        todos={todos} 
+        projects={projects} 
+        onRefresh={fetchData}
+      />
+    );
+  }
+  
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return null;
+}
+```
+
+**With zeft:**
+```tsx
+import { useCombinedEffects } from 'zeft/react'
+import * as Effect from 'effect/Effect'
+
+// Create individual effects
+const fetchUsersEffect = Effect.tryPromise(() => fetch('/api/users').then(r => r.json()));
+const fetchTodosEffect = Effect.tryPromise(() => fetch('/api/todos').then(r => r.json()));
+const fetchProjectsEffect = Effect.tryPromise(() => fetch('/api/projects').then(r => r.json()));
+
+function Dashboard() {
+  // Run multiple effects in parallel or sequence
+  const { 
+    data,      // Array of results in same order as effects
+    error,     // First error encountered
+    isLoading,
+    run
+  } = useCombinedEffects(
+    [fetchUsersEffect, fetchTodosEffect, fetchProjectsEffect],
+    {
+      executionOrder: 'parallel', // or 'sequence'
+      immediate: true,
+      onSuccess: ([users, todos, projects]) => {},
+      onError: (error) => {}
+    }
+  );
+  
+  if (isLoading) return <div>Loading dashboard data...</div>;
+  
+  if (data) {
+    const [users, todos, projects] = data;
+    return (
+      <Dashboard 
+        users={users} 
+        todos={todos} 
+        projects={projects} 
+        onRefresh={run}
+      />
+    );
+  }
+  
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return null;
+}
+```
+
+##### useConditionalEffect
+
+For running effects only when certain conditions are met:
+
+**Traditional React approach:**
+```tsx
+import { useState, useEffect, useCallback } from 'react';
+
+function UserProfile() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isExecuted, setIsExecuted] = useState(false);
+  
+  const fetchUserProfile = useCallback(async () => {
+    // Don't run if not logged in
+    if (!isLoggedIn) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/user/profile');
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      const data = await response.json();
+      setUser(data);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+    } finally {
+      setIsLoading(false);
+      setIsExecuted(true);
+    }
+  }, [isLoggedIn]);
+  
+  // Run effect when isLoggedIn changes
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserProfile();
+    }
+  }, [isLoggedIn, fetchUserProfile]);
+  
+  if (!isLoggedIn) {
+    return <button onClick={() => setIsLoggedIn(true)}>Log in</button>;
+  }
+  
+  if (isLoading) return <div>Loading profile...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return user ? <UserDetails user={user} /> : null;
+}
+```
+
+**With zeft:**
+```tsx
+import { useConditionalEffect } from 'zeft/react'
+import * as Effect from 'effect/Effect'
+
+const fetchUserProfileEffect = Effect.tryPromise(() => 
+  fetch('/api/user/profile').then(r => r.json())
+);
+
+function UserProfile() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Only run when condition is true
+  const { 
+    data: user, 
+    error,
+    isLoading 
+  } = useConditionalEffect(
+    fetchUserProfileEffect,
+    isLoggedIn,              // Condition
+    { immediate: true }      // Options
+  );
+  
+  if (!isLoggedIn) {
+    return <button onClick={() => setIsLoggedIn(true)}>Log in</button>;
+  }
+  
+  if (isLoading) return <div>Loading profile...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return user ? <UserDetails user={user} /> : null;
+}
+```
+
+##### useStoreEffect
+
+For running effects with direct store integration:
+
+**Traditional React approach:**
+```tsx
+import { useState, useEffect, useCallback } from 'react';
+import { todoStore } from './store';
+
+function TodoList() {
+  const [todos, setTodos] = useState(todoStore.getState().todos);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Subscribe to store changes
+  useEffect(() => {
+    const unsubscribe = todoStore.subscribe((state) => {
+      setTodos(state.todos);
+    });
+    return unsubscribe;
+  }, []);
+  
+  const fetchTodos = useCallback(async () => {
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/todos');
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+      const data = await response.json();
+      
+      // Update the store with fetched data
+      todoStore.setState((state) => ({
+        ...state,
+        todos: data,
+        loading: false
+      }));
+      
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      
+      // Update store with error
+      todoStore.setState((state) => ({
+        ...state,
+        error,
+        loading: false
+      }));
+      
+      setError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+  
+  // Initial fetch
+  useEffect(() => {
+    fetchTodos();
+  }, [fetchTodos]);
+  
+  return (
+    <div>
+      <button onClick={fetchTodos} disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Refresh'}
+      </button>
+      {/* Rest of the component */}
+    </div>
+  );
+}
+```
+
+**With zeft:**
+```tsx
+import { useStoreEffect } from 'zeft/react'
+import * as Effect from 'effect/Effect'
+
+const fetchTodosEffect = Effect.tryPromise(() => 
+  fetch('/api/todos').then(r => r.json())
+);
+
+function TodoList() {
+  // Use effect with automatic store updates
+  const { 
+    data: todos, 
+    isLoading, 
+    run
+  } = useStoreEffect(
+    todoStore,             // The store
+    fetchTodosEffect,      // The effect
+    {
+      immediate: true,
+      onSuccess: (todos) => {
+        // Update store state
+        todoStore.setState((state) => ({
+          ...state,
+          todos,
+          loading: false
+        }));
+      },
+      onError: (error) => {
+        todoStore.setState((state) => ({
+          ...state,
+          error,
+          loading: false
+        }));
+      }
+    }
+  );
+  
+  return (
+    <div>
+      <button onClick={run} disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Refresh'}
+      </button>
+      {/* Rest of the component */}
+    </div>
+  );
+}
+```
+
+### Basic Usage Example
 
 ```typescript
 import { createStore } from 'zeft'
@@ -286,6 +701,92 @@ const useStore = createStore<TodoState>((set, get) => ({
   }
 }))
 ```
+
+### Store Slices
+
+For larger applications, you can break your store into modular slices to improve code organization and maintainability. This approach helps separate concerns and makes your state management more scalable.
+
+```typescript
+import { createSlice, createStore, combineSlices } from 'zeft'
+
+// Define interfaces for each slice
+interface UserSlice {
+  user: { id: string; name: string } | null;
+  setUser: (user: { id: string; name: string } | null) => void;
+  isLoggedIn: boolean;
+}
+
+interface TodosSlice {
+  todos: Array<{ id: string; text: string; completed: boolean }>;
+  addTodo: (text: string) => void;
+  toggleTodo: (id: string) => void;
+}
+
+// Define the complete store type by combining all slice types
+type StoreState = UserSlice & TodosSlice;
+
+// Create individual slices
+const createUserSlice = <T>() => 
+  createSlice<T, UserSlice>((set, get) => ({
+    user: null,
+    isLoggedIn: false,
+    setUser: (user) => set((state) => ({ 
+      user, 
+      isLoggedIn: user !== null 
+    }) as any, false, "setUser")
+  }));
+
+const createTodosSlice = <T>() => 
+  createSlice<T, TodosSlice>((set, get) => ({
+    todos: [],
+    addTodo: (text) => set((state) => {
+      const newTodo = { 
+        id: Math.random().toString(36).substring(2, 9), 
+        text, 
+        completed: false 
+      };
+      return { todos: [...(state as any).todos, newTodo] } as any;
+    }, false, "addTodo"),
+    
+    toggleTodo: (id) => set((state) => {
+      const todos = (state as any).todos.map((todo: any) => 
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      );
+      return { todos } as any;
+    }, false, "toggleTodo")
+  }));
+
+// Method 1: Create store by spreading slices manually
+export const useStore = createStore<StoreState>((set, get) => ({
+  ...createUserSlice<StoreState>()(set, get),
+  ...createTodosSlice<StoreState>()(set, get)
+}));
+
+// Method 2: Create store using combineSlices helper
+export const useStore = createStore<StoreState>(
+  combineSlices({
+    user: createUserSlice<StoreState>(),
+    todos: createTodosSlice<StoreState>()
+  })
+);
+
+// Usage
+function example() {
+  const { user, todos, addTodo, setUser } = useStore.getState();
+  
+  // Use the slice actions
+  setUser({ id: "1", name: "John Doe" });
+  addTodo("Learn about zeft slices");
+}
+```
+
+#### Benefits of using slices:
+
+- **Modularity**: Each slice can be developed and tested independently
+- **Code organization**: Group related state and actions together
+- **Team collaboration**: Different team members can work on different slices
+- **Reusability**: Slices can be reused across projects or within different stores
+- **Maintainability**: Easier to manage large state structures by breaking them into smaller pieces
 
 ### Middleware
 
@@ -478,6 +979,94 @@ function LogoutButton() {
   return <button onClick={handleLogout}>Logout</button>
 }
 ```
+
+#### DevTools Middleware
+
+The DevTools middleware integrates your store with Redux DevTools Extension, enabling powerful debugging capabilities such as time-travel debugging, action tracking, and state inspection.
+
+> **Note:** To use this middleware, you need to install the [Redux DevTools Extension](https://github.com/reduxjs/redux-devtools) for your browser.
+
+```typescript
+import { createStore } from 'zeft'
+import { devtools } from 'zeft/middleware'
+
+interface CounterState {
+  count: number
+  increment: () => void
+  decrement: () => void
+  reset: () => void
+}
+
+// Create a store with DevTools integration
+const useStore = createStore<CounterState>(
+  devtools(
+    (set) => ({
+      count: 0,
+      
+      // Adding action names improves the DevTools experience
+      increment: () => set(state => ({ count: state.count + 1 }), false, 'increment'),
+      decrement: () => set(state => ({ count: state.count - 1 }), false, 'decrement'),
+      reset: () => set({ count: 0 }, false, 'reset')
+    }),
+    {
+      name: 'Counter Store', // The name shown in DevTools
+      enabled: true // Explicitly enable (default: true in development, false in production)
+    }
+  )
+)
+```
+
+##### Configuring DevTools Options
+
+You can customize the DevTools integration with various options:
+
+```typescript
+const useStore = createStore<CounterState>(
+  devtools(
+    (set) => ({
+      // State and actions
+    }),
+    {
+      name: 'My Application Store',
+      enabled: process.env.NODE_ENV !== 'production', // Disable in production
+      maxAge: 30, // Maximum number of actions to keep in history
+      anonymousActionType: 'unnamed_action', // Default name for actions without a name
+      stateSanitizer: (state) => {
+        // Filter out sensitive data before sending to DevTools
+        const { password, ...rest } = state
+        return rest
+      },
+      actionSanitizer: (action) => {
+        // Filter sensitive data from actions
+        if (action.type === 'setCredentials') {
+          return { ...action, payload: '***' }
+        }
+        return action
+      }
+    }
+  )
+)
+```
+
+##### Using with TypeScript
+
+When using with TypeScript, you'll need to use the third parameter of the `set` function to name your actions:
+
+```typescript
+// Action names improve debugging experience in Redux DevTools
+increment: () => set(state => ({ count: state.count + 1 }), false, 'increment'),
+```
+
+##### Time-Travel Debugging
+
+With DevTools middleware, you can:
+- Track all state changes in Redux DevTools
+- Jump to any previous state
+- Replay actions
+- Export and import state history
+- Monitor performance
+
+This makes debugging complex state management issues much easier.
 
 ## License
 

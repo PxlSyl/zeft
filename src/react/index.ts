@@ -1,4 +1,4 @@
-// Export de tous les hooks React
+
 export {
   useStore,
   useStoreSelector,
@@ -6,3 +6,16 @@ export {
   useMemoizedSelector,
   useMemoizedAction,
 } from "./react";
+
+export {
+  useAsyncEffect,
+  useCombinedEffects,
+  useConditionalEffect,
+  useStoreEffect,
+  // Types
+  type UseAsyncEffectOptions,
+  type UseAsyncEffectResult,
+  type UseCombinedEffectsOptions,
+  type UseCombinedEffectsResult,
+  type EffectExecutionOrder,
+} from "./hooks";

@@ -22,14 +22,17 @@ export type SetState<T> = {
   <K extends keyof T>(
     state: Pick<T, K> | null | ((state: T) => Pick<T, K> | null),
     replace?: boolean,
+    actionName?: string,
   ): void;
   <K extends keyof T>(
     state: ((state: T) => Pick<T, K> | null) | Pick<T, K> | null,
     replace?: boolean,
+    actionName?: string,
   ): void;
   (
     state: Partial<T> | null | ((state: T) => Partial<T> | null),
     replace?: boolean,
+    actionName?: string,
   ): void;
 };
 
@@ -44,6 +47,82 @@ export type GetState<T> = () => T;
  * @template T The type of the store's state
  */
 export type StateCreator<T> = (set: SetState<T>, get: GetState<T>) => T;
+
+/**
+ * Type for a slice of the store's state
+ * @template T The type of the entire store's state
+ * @template S The type of the slice
+ */
+export type StateSlice<T, S> = (set: SetState<T>, get: GetState<T>) => S;
+
+/**
+ * Creates a store slice that can be combined with other slices
+ * @template T The type of the entire store's state
+ * @template S The type of the slice
+ * @param fn Function that creates the slice
+ * @returns A slice that can be combined with other slices
+ *
+ * @example
+ * ```typescript
+ * // userSlice.ts
+ * interface UserSlice {
+ *   user: User | null;
+ *   setUser: (user: User | null) => void;
+ * }
+ *
+ * export const createUserSlice = <T>() =>
+ *   createSlice<T, UserSlice>((set, get) => ({
+ *     user: null,
+ *     setUser: (user) => set({ user } as any)
+ *   }));
+ *
+ * // store.ts
+ * const useStore = createStore((...a) => ({
+ *   ...createUserSlice<StoreState>()(...a),
+ *   ...createTodosSlice<StoreState>()(...a)
+ * }));
+ * ```
+ */
+export function createSlice<T, S>(fn: StateSlice<T, S>): StateSlice<T, S> {
+  return fn;
+}
+
+/**
+ * Combines multiple slices into a single state creator
+ * @template T The type of the store's state
+ * @param slices Object containing state slices to combine
+ * @returns A combined state creator function
+ *
+ * @example
+ * ```typescript
+ * // Define state type that includes all slices
+ * type StoreState = UserSlice & TodosSlice & SettingsSlice;
+ *
+ * // Create the store with combined slices
+ * const useStore = createStore<StoreState>(
+ *   combineSlices({
+ *     // Each slice automatically receives the correct typing
+ *     ...createUserSlice<StoreState>(),
+ *     ...createTodosSlice<StoreState>(),
+ *     ...createSettingsSlice<StoreState>()
+ *   })
+ * );
+ * ```
+ */
+export function combineSlices<T>(
+  slices: Record<string, StateSlice<T, any>>,
+): StateCreator<T> {
+  return (set, get) => {
+    const createState: Record<string, any> = {};
+
+    for (const key in slices) {
+      const slice = slices[key];
+      Object.assign(createState, slice(set, get));
+    }
+
+    return createState as T;
+  };
+}
 
 /**
  * Creates a new store with the given state creator
